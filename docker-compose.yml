@@ -1,0 +1,39 @@
+version: '3.9' # specify docker-compose version
+
+services:
+  demo:
+    build: ./demo/.
+    expose:
+      - 8080
+    networks:
+      - network
+    depends_on:
+      - db
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://db:5432/compose-postgres
+      - SPRING_DATASOURCE_USERNAME=compose-postgres
+      - SPRING_DATASOURCE_PASSWORD=compose-postgres
+      - SPRING_JPA_HIBERNATE_DDL_AUTO=update
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+  demo-frontend:
+    build: ./demo-frontend/.
+    ports:
+      - "8081:8081"
+    depends_on:
+      - demo
+    networks:
+      - network
+    environment:
+      - SPRING_PROFILES_ACTIVE=${SPRING_PROFILES_ACTIVE}
+  db:
+    image: 'postgres:13.1-alpine'
+    container_name: db
+    networks:
+      - network
+    environment:
+      - POSTGRES_USER=compose-postgres
+      - POSTGRES_PASSWORD=compose-postgres
+
+networks:
+  network:
+    driver: bridge
